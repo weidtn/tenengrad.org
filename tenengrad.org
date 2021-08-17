@@ -1,0 +1,83 @@
+#+TITLE: Tenengrad
+#+PROPERTY: header-args:jupyter-python  :session *python*
+#+PROPERTY: header-args:clojure  :session *clojure*
+
+
+* Create 10 circles with different blur
+
+
+Original circle:
+#+begin_src jupyter-python :results file :file "circle00.png"
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2 as cv
+import seaborn as sn
+import glob
+
+circle = cv.imread("./circle.png")
+cv.imwrite("circle00.png", circle)
+#+end_src
+
+#+RESULTS:
+: True
+
+Apply gaussian blur
+#+begin_src jupyter-python :results output :cache yes
+blurrange = range(0,55, 5)
+for i in blurrange:
+    if i == 0:
+        continue
+    blur = cv.GaussianBlur(cv.imread("circle00.png"), (0,0), i)
+    cv.imwrite(f"circle{i:02d}.png", blur)
+#+end_src
+
+#+RESULTS[6cdd205ea6fd874ed35814c622f304ac9b3d39d2]:
+
+#+begin_src jupyter-python :results output
+images = sorted(glob.glob("*[0-9].png"))
+
+fig, axes = plt.subplots(2,len(images)//2)
+for i,ax in enumerate(axes.flatten()):
+    ax.imshow(cv.imread(images[i]))
+    ax.annotate(f"SigmaX = {i*5}", (0,0))
+    ax.set_xticks([])
+    ax.set_yticks([])
+plt.tight_layout()
+#+end_src
+
+#+RESULTS:
+[[file:./.ob-jupyter/4eef0b538ae3b8bf4c6f3e7b3a7db47adb0a926c.png]]
+
+* Tenengrad in python:
+
+#+begin_src jupyter-python :results output
+def tenengrad(img, ksize=3):
+    ''''TENG' algorithm (Krotkov86)'''
+    Gx = cv.Sobel(img, ddepth=cv.CV_64F, dx=1, dy=0, ksize=ksize)
+    Gy = cv.Sobel(img, ddepth=cv.CV_64F, dx=0, dy=1, ksize=ksize)
+    FM = Gx*Gx + Gy*Gy
+    mn = cv.mean(FM)[0]
+    if np.isnan(mn):
+        return np.nanmean(FM)
+    return mn
+
+tenengrads = np.empty(len(images))
+for i,file in enumerate(sorted(glob.glob("*[0-9].png"))):
+    tenengrads[i] = tenengrad(cv.imread(file))
+#+end_src
+
+#+RESULTS:
+
+
+* Plot results:
+#+begin_src jupyter-python :results file :file "tenenplot.png"
+fig, ax = plt.subplots()
+
+ax.plot(blurrange[1:], tenengrads[1:], ".")
+ax.set_xlabel("Gaußian blur sigmaX")
+ax.set_ylabel("Tenengrad")
+plt.tight_layout()
+#+end_src
+
+#+RESULTS:
+[[file:tenenplot.png]]
