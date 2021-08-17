@@ -33,7 +33,7 @@ for i in blurrange:
 
 #+RESULTS[6cdd205ea6fd874ed35814c622f304ac9b3d39d2]:
 
-#+begin_src jupyter-python :results output
+#+begin_src jupyter-python :results output :exports both
 images = sorted(glob.glob("*[0-9].png"))
 
 fig, axes = plt.subplots(2,len(images)//2)
@@ -70,7 +70,7 @@ for i,file in enumerate(sorted(glob.glob("*[0-9].png"))):
 
 
 * Plot results:
-#+begin_src jupyter-python :results file :file "tenenplot.png"
+#+begin_src jupyter-python :results file :file "tenenplot.png" :exports both
 fig, ax = plt.subplots()
 
 ax.plot(blurrange[1:], tenengrads[1:], ".")
